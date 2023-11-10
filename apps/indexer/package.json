@@ -1,0 +1,17 @@
+{
+  "name": "@xballot/indexer",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.1",
+    "serve": "^14.2.0",
+    "timers": "^0.1.1",
+    "tweetnacl": "^1.0.3"
+  },
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node index.mjs"
+  }
+}

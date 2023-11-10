@@ -1,0 +1,596 @@
+#pragma version 5
+// check if the app is being created
+// if so save creator
+int 0
+txn ApplicationID
+==
+bz not_creation
+byte "Creator"
+txn Sender
+app_global_put
+//add asset id to global state
+byte "assetId"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "frozen"
+int 0
+app_global_put
+byte "ready"
+int 0
+app_global_put
+int 1
+return
+not_creation:
+// check if this is deletion
+int DeleteApplication
+txn OnCompletion
+==
+bz not_deletion
+//check if deletor is creator
+byte "Creator"
+app_global_get
+txn Sender
+==
+bz failed
+int 1
+return
+not_deletion:
+//---
+// check if this is update
+int UpdateApplication
+txn OnCompletion
+==
+bz not_update
+byte "Creator"
+app_global_get
+txn Sender
+==
+bz failed
+int 1
+return
+not_update:
+// check for closeout
+int CloseOut
+txn OnCompletion
+==
+bnz close_out
+// opt in
+txna ApplicationArgs 0
+byte "addasset"
+==
+bnz addasset
+//register
+txna ApplicationArgs 0
+byte "register"
+==
+bnz register
+// tradeAlgo
+txna ApplicationArgs 0
+byte "algo"
+==
+bnz tradeAlgo
+// swapASA
+txna ApplicationArgs 0
+byte "asa"
+==
+bnz tradeAsa
+// add liquidity
+txna ApplicationArgs 0
+byte "addL"
+==
+bnz addL
+// withdraw liquidity
+txna ApplicationArgs 0
+byte "withdraw"
+==
+bnz withdraw
+// freeze swaps
+txna ApplicationArgs 0
+byte "freeze"
+==
+bnz freeze
+// unfreeze swaps
+txna ApplicationArgs 0
+byte "unfreeze"
+==
+bnz unfreeze
+//unfreeze swaps
+unfreeze:
+byte "Creator"
+app_global_get
+txn Sender
+==
+bz failed
+byte "frozen"
+int 0
+app_global_put
+int 1
+return
+//freeze swaps
+freeze:
+byte "Creator"
+app_global_get
+txn Sender
+==
+bz failed
+byte "frozen"
+int 1
+app_global_put
+int 1
+return
+//withdraw liquidity
+withdraw:
+int 0 
+txn ApplicationID
+app_opted_in
+//calculate percentage
+byte "tokens"
+app_global_get
+int 1000000
+*
+int 0
+byte "tokens"
+app_local_get
+/
+store 0
+//get pool Assset balance
+byte "asaBalance"
+app_global_get
+store 1
+// asa transfer
+itxn_begin
+int axfer
+itxn_field TypeEnum
+load 1
+int 1000000
+*
+load 0
+/
+store 2
+load 2
+itxn_field AssetAmount
+txn Sender
+itxn_field AssetReceiver
+txn Assets 0
+itxn_field XferAsset
+itxn_submit
+//algo transfer
+itxn_begin
+int pay
+itxn_field TypeEnum
+global CurrentApplicationAddress
+balance
+int 1000000
+-
+int 1000000
+*
+load 0
+/
+itxn_field Amount
+txn Sender
+itxn_field Receiver
+itxn_submit
+//update virtual liquidity tokens
+byte "tokens"
+byte "tokens"
+app_global_get
+int 0
+byte "tokens"
+app_local_get
+-
+app_global_put
+int 0
+byte "tokens"
+int 0
+app_local_put
+byte "asaBalance"
+byte "asaBalance"
+app_global_get
+load 2
+-
+app_global_put
+int 1
+return
+//add liquidity
+addL:
+int 0 
+txn ApplicationID
+app_opted_in
+bz failed
+global GroupSize
+int 3
+==
+bz failed
+//check that txn1 is to correct pool and is asa transfer
+gtxn 1 AssetReceiver
+global CurrentApplicationAddress
+==
+bz failed
+//check that txn2 is to correct pool and is pay
+gtxn 2 Receiver
+global CurrentApplicationAddress
+==
+bz failed
+//check that asset is HDL
+gtxn 1 XferAsset
+byte "assetId"
+app_global_get
+==
+bz failed
+byte "Creator"
+app_global_get
+txn Sender
+==
+byte "ready"
+app_global_get
+!
+&&
+byte "asaBalance"
+app_global_get
+int 100000
+<=
+byte "Creator"
+app_global_get
+txn Sender
+==
+&&
+||
+bz continue
+byte "ready"
+int 1
+app_global_put
+b skip
+continue:
+//rough check liquidity ratio
+//check if algo > asa
+global CurrentApplicationAddress
+balance
+store 0
+//get pool Assset balance
+byte "asaBalance"
+app_global_get
+store 1
+//check if Algo balance > asset balance
+load 0
+load 1
+>=
+bz asa_bigger3
+load 0
+int 10000
+*
+load 1
+/
+store 2
+gtxn 2 Amount
+int 10000
+*
+gtxn 1 AssetAmount
+/
+load 2
+==
+bz failed
+b skip
+asa_bigger3:
+load 1
+int 10000
+*
+load 0
+/
+store 2
+gtxn 1 AssetAmount
+int 10000
+*
+gtxn 2 Amount
+/
+load 2
+==
+bz failed
+skip:
+//update virtual liquidity tokens
+int 0
+byte "tokens"
+int 0
+byte "tokens"
+app_local_get
+gtxn 2 Amount
++
+app_local_put
+byte "tokens"
+byte "tokens"
+app_global_get
+gtxn 2 Amount
++
+app_global_put
+byte "asaBalance"
+byte "asaBalance"
+app_global_get
+gtxn 1 AssetAmount
++
+app_global_put
+int 1
+return
+//tradeAlgo
+tradeAlgo:
+// check if sender has platAstro and use to set fee
+txn Sender
+// platAstro id here
+int 92248789
+asset_holding_get AssetBalance
+pop
+!
+int 1000000
+*
+store 6
+byte "frozen"
+app_global_get
+int 0
+==
+bz failed
+global GroupSize
+int 2
+==
+bz failed
+//check that funds are being sent to app address
+gtxn 1 AssetReceiver
+global CurrentApplicationAddress
+==
+bz failed
+//check that txn2 is asa transfer txn
+gtxn 1 Type
+byte "axfer"
+==
+bz failed
+//check that asset is HDL
+gtxn 1 XferAsset
+byte "assetId"
+app_global_get
+==
+bz failed
+gtxn 1 AssetAmount
+txna ApplicationArgs 1
+btoi
+-
+//check if fee is included
+load 6
+>=
+bz failed
+//store tolerance
+txna ApplicationArgs 2
+btoi
+txna ApplicationArgs 3
+btoi
+*
+store 7
+//calculate amount to pay out
+//get pool Algo balance
+global CurrentApplicationAddress
+balance
+store 0
+//get pool Assset balance
+byte "asaBalance"
+app_global_get
+store 1
+//check if Algo balance > asset balance
+load 0
+load 1
+>=
+bz asa_bigger2
+load 0
+int 1000000
+*
+load 1
+/
+store 5
+txna ApplicationArgs 1
+btoi
+//subtract fee
+load 6
+-
+load 5
+*
+int 1000000
+/
+store 4
+b proceed2
+asa_bigger2:
+load 1
+int 1000000
+*
+load 0
+/
+store 5
+txna ApplicationArgs 1
+btoi
+//subtract fee
+load 6
+-
+int 1000000
+*
+load 5
+/
+store 4
+proceed2:
+//check if amount is tolerable
+load 4
+load 7
+>=
+bz failed
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 4
+itxn_field Amount
+txn Sender
+itxn_field Receiver
+itxn_submit
+byte "asaBalance"
+byte "asaBalance"
+app_global_get
+gtxn 1 AssetAmount
++
+app_global_put
+int 1
+return
+//addasset
+addasset:
+byte "Creator"
+app_global_get
+txn Sender
+==
+bz failed
+//opt in to asset
+itxn_begin
+int axfer
+itxn_field TypeEnum
+global CurrentApplicationAddress
+itxn_field AssetReceiver
+byte "assetId"
+app_global_get
+itxn_field XferAsset
+// send 10
+int 0
+itxn_field AssetAmount
+itxn_submit
+int 1
+return
+//tradeAsa
+tradeAsa:
+// check if sender has platAstro and use to set fee
+txn Sender
+int 92248789
+asset_holding_get AssetBalance
+pop
+!
+int 1000000
+*
+store 6
+byte "frozen"
+app_global_get
+int 0
+==
+bz failed
+global GroupSize
+int 2
+==
+bz failed
+//check that funds are being sent to app address
+gtxn 1 Receiver
+global CurrentApplicationAddress
+==
+bz failed
+//check that txn2 is payment txn
+gtxn 1 Type
+byte "pay"
+==
+bz failed
+gtxn 1 Amount
+txna ApplicationArgs 1
+btoi
+-
+//check if fee is included
+load 6
+>=
+bz failed
+//store tolerance
+txna ApplicationArgs 2
+btoi
+txna ApplicationArgs 3
+btoi
+*
+store 7
+//calculate amount to pay out
+//get pool Algo balance
+global CurrentApplicationAddress
+balance
+store 0
+//get pool Assset balance
+byte "asaBalance"
+app_global_get
+store 1
+//check if Algo balance > asset balance
+load 0
+load 1
+>=
+bz asa_bigger
+load 0
+int 1000000
+*
+load 1
+/
+store 5
+txna ApplicationArgs 1
+btoi
+//subtract fee
+load 6
+-
+int 1000000
+*
+load 5
+/
+store 4
+b proceed
+asa_bigger:
+load 1
+int 1000000
+*
+load 0
+/
+store 5
+txna ApplicationArgs 1
+btoi
+//subtract fee
+load 6
+-
+load 5
+*
+int 1000000
+/
+store 4
+proceed:
+//check if amount is tolerable
+load 4
+load 7
+>=
+bz failed
+itxn_begin
+int axfer
+itxn_field TypeEnum
+txn Sender
+itxn_field AssetReceiver
+//Asset ID must be in the assets array
+byte "assetId"
+app_global_get
+itxn_field XferAsset
+load 4
+itxn_field AssetAmount
+itxn_submit
+byte "asaBalance"
+byte "asaBalance"
+app_global_get
+load 4
+-
+app_global_put
+int 1
+return
+register:
+int OptIn
+txn OnCompletion
+==
+bz failed
+int 0
+byte "tokens"
+int 0
+app_local_put
+int 1
+return
+//call if this is a closeout op
+close_out:
+int 1
+return
+failed:
+int 0
+return
+finished:
+int 1
+return

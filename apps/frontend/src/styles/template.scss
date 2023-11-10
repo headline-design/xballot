@@ -1,0 +1,97 @@
+a,
+button,
+input {
+  @apply transition-colors;
+}
+
+b {
+  @apply font-semibold;
+}
+
+select {
+  @apply bg-skin-bg;
+}
+
+// Don't prevent overscroll on touch devices
+@media (pointer: fine) {
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+
+[data-theme='dark'] {
+    color-scheme: dark;
+    --primary-color: #384aff;
+    --bg-color: #211f24;
+    --text-color: #8b949e;
+    --link-color: #ffffff;
+    --heading-color: #ffffff;
+    --border-color: #2d2d2d;
+    --header-bg: #1c1b20;
+    --block-bg: transparent;
+    --shadow-color: #fff1;
+  }
+
+  [data-theme='light'] {
+    color-scheme: light;
+    --primary-color: #384aff;
+    --bg-color: white;
+    --text-color: #57606a;
+    --link-color: #444444;
+    --heading-color: #111111;
+    --border-color: #e0e0e0;
+    --header-bg: white;
+    --block-bg: transparent;
+    --shadow-color: #0001;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  h1 {
+    @apply text-2xl;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply my-2 text-lg;
+  }
+
+  h4 {
+    @apply text-md;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold text-skin-heading;
+  }
+
+
+@font-face {
+  font-family:iconfont;
+  src:url(../assets/fonts/iconfont.5f62bf18.woff2)format("woff2")
+}
+
+@font-face {
+  font-family:InterCC;
+  src:url(../assets/fonts/Inter-Medium-Custom.t56hgd16c117.woff2)format("woff2");font-weight:500;font-style:normal
+}
+
+@font-face {
+  font-family:InterCC;
+  src:url(../assets/fonts/Inter-Semibold-Custom.a16vv32009c.woff2)format("woff2");font-weight:600;font-style:normal
+}
+
+@font-face {
+  font-family: SpaceMono;
+  src: url('../assets/fonts/Space-Mono-Custom-v11-latin-700.woff2') format('woff2');
+}

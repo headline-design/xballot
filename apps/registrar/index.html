@@ -1,0 +1,254 @@
+<div class="mega-block-3">
+    <input autocomplete="on" type="number" placeholder="appId" id="appId"  />
+    <input autocomplete="on" type="text" placeholder="prop1" id="prop1" />
+    <input autocomplete="on" type="text" placeholder="description" id="description"></input>
+    <input autocomplete="on" type="number" placeholder="max-round" id="maxRound"></input>
+    <input autocomplete="on" type="string" placeholder="asset" id="assetId"></input>
+    <input autocomplete="on" type="string" placeholder="new owner" id="newOwner"></input>
+    <input autocomplete="on" type="string" placeholder="domain name" id="domain"></input>
+    <input autocomplete="on" type="string" placeholder="dao description" id="daoDescription"></input>
+    <input autocomplete="on" type="string" placeholder="wizard mnemonic" id="wizard"></input>
+
+<button onClick="connect()" >Connect</button>
+<button onClick ="test()" >Deploy</button>
+<button onClick="enable()">Enable</button>
+<button onClick="register()">Register</button>
+<button onClick="createVote()">Create Vote</button>
+<button onClick="voot()">Voot</button>
+<button onClick="getVotes()">Get Votes</button>
+<button onClick="describe()">Describe</button>
+<button onClick="transfer()">Transfer Ownership</button>
+<button onClick="testSec()">TestSec</button>
+
+    </div>
+<script src="nacl.js"></script>
+<script src="pipeline.min.js"></script>
+<script src="algosdk.min.js"></script>
+<script src="utils.js" ></script>
+<script src="orderFunctions.js"></script>
+<script>
+    const Pipeline = window.pipeline
+    //Pipeline.main = true
+    //Pipeline.pipeConnector = "PeraWallet"
+
+    Pipeline.main = false
+
+    function connect (){
+        Pipeline.connect().then(data => alert(data))
+    }
+
+/*appCall(
+    appId,
+    appArgs,
+    accounts = undefined,
+    assets = undefined,
+    applications = undefined
+)*/
+
+    async function register(){
+       let txId = await Pipeline.optIn(
+        parseInt(document.getElementById("appId").value),
+        ["register"]
+        )
+
+    }
+
+    async function createVote(){
+        let  appId = parseInt(document.getElementById("appId").value)
+        let assetId = parseInt(document.getElementById("assetId").value)
+
+       let txId = await Pipeline.appCall(
+        appId,
+        ["start",document.getElementById("description").value, parseInt(document.getElementById("maxRound").value),], [Pipeline.address], [assetId]
+        )
+
+    }
+
+    appId = 0,
+    appArgs = [],
+    reciever = "",
+    amount = 0,
+    note = "",
+    index = 0,
+    accounts = undefined,
+    assets = undefined
+
+    async function enable(){
+
+        let appId = parseInt(document.getElementById("appId").value)
+        let appAddress = algosdk.getApplicationAddress(appId)
+
+        let txid = await Pipeline.send(appAddress,1200000,"",undefined,undefined,0)
+        console.log(txid)
+       let txId = await Pipeline.appCallWithTxn(
+        appId,
+        ["enable"],
+        "PPFMWPQEQOIKGUO5WST7X6VKQ65NCMT6R6AOY6QYZTRCREGVSLOKUB72UY",
+        1000000
+        )
+        console.log(txId)
+
+    }
+
+    async function voot(){
+       let txId = await Pipeline.appCall(
+        parseInt(document.getElementById("appId").value),
+        ["vote", document.getElementById("prop1").value],
+        )
+    }
+
+    async function transfer(){
+       let txId = await Pipeline.appCall(
+        parseInt(document.getElementById("appId").value),
+        ["transfer"],[document.getElementById("newOwner").value]
+        )
+    }
+
+    async function getVotes(){
+       let dataGetter = await voteGetter(
+        parseInt(document.getElementById("appId").value),
+        parseInt(document.getElementById("maxRound").value),
+        parseInt(document.getElementById("assetId").value)
+        )
+        //console.log(dataGetter)
+    }
+
+    const test = () => customOrders.deploy(document.getElementById("daoDescription").value)
+
+ async function describe() {
+
+    let description = document.getElementById("daoDescription").value
+
+    let appId = parseInt(document.getElementById("appId").value)
+
+    //let appAddress1234 =  algosdk.getApplicationAddress(appId)
+
+    //alert(appAddress1234)
+
+    //let fundTxid = await Pipeline.send(appAddress1234, 1000000,"",undefined,undefined,0)
+
+    //alert("funded app address with txid: " + fundTxid)
+
+    //let boxName = "desc"
+
+    //let boxArray =  Uint8Array.from(boxName.split("").map(x => x.charCodeAt()))
+    //console.log("box array: ", boxArray)
+
+
+    let txid = await Pipeline.appCall(
+        appId,
+        ['describe', description],
+        [],
+        [],
+        [],
+        //[{appIndex:0, name:boxArray}]
+    )
+console.log(txid)
+
+if (txid !== 'undefined') {
+    return txid
+}
+}
+
+function addressToHex(seeder){
+
+    let addrArray = algosdk.decodeAddress(seeder)
+    let hex = Buffer.from(addrArray.publicKey).toString('hex');
+    hex = "0x" + hex
+    return hex
+
+}
+
+async function testSec(){
+    let user2 = {
+        address: "",
+        signed: "",
+        key:"hdl"
+        }
+
+
+
+    let account = algosdk.mnemonicToSecretKey(document.getElementById("wizard").value)
+    console.log(account)
+    let message = cBuffer(Date.now().toString())
+    console.log(message)
+    let signed = nacl.sign(message, account.sk)
+    console.log(signed)
+
+
+    user2.address = account.addr
+    user2.signed = deBuffer(signed)
+
+    let options = {
+        method: 'POST',
+        body: undefined,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }
+
+    let newOptions = {...options}
+        newOptions.body = JSON.stringify(user2)
+
+        console.log(newOptions)
+
+    let data = await fetch("http://192.168.1.248:8888/upload/removeBanned",newOptions)
+}
+
+
+function cBuffer(text) {
+        let array = []
+        for (let i = 0; i < text.length; i++) {
+            array.push(text.charCodeAt(i))
+        }
+
+        let buffer = Uint8Array.from(array)
+    return buffer
+    }
+
+    function deBuffer(uintArray){
+        let string = ""
+
+        uintArray.forEach(entry => {
+            string += String.fromCharCode(entry)
+        })
+        return string
+    }
+
+
+
+
+</script>
+
+<style>
+
+    .textBlock {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    grid-gap: 8px;
+}
+
+.mega-block {
+    width: 100%;
+    display: inline-flex;
+    justify-content: space-evenly;
+    grid-gap: 10px;
+}
+
+.mega-block-2 {
+    grid-gap: 10px;
+    display: flex;
+    flex-direction: column;
+    padding-top: 6px;
+    margin-top: 10px;
+}
+
+.mega-block-3 {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    grid-gap: 15px;
+}
+
+</style>

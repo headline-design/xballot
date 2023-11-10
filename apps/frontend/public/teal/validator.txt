@@ -1,0 +1,57 @@
+#pragma version 6
+// check if the app is being created
+int 0
+txn ApplicationID
+==
+bz not_creation
+int 1
+return
+not_creation:
+// save asset index
+txna Assets 0
+store 0
+// save index of new app
+txna Applications 1
+store 1
+//check that asa is correct
+load 0
+load 1
+byte "assetId"
+app_global_get_ex
+pop
+==
+bz failed
+//check that second app id is equal to OG app id
+txna Applications 2
+int 93102301
+==
+bz failed
+txna Applications 1
+app_params_get AppApprovalProgram
+pop
+txna Applications 2
+app_params_get AppApprovalProgram
+pop
+==
+bz failed
+itxn_begin
+int pay
+itxn_field TypeEnum
+int 0
+itxn_field Amount
+load 0
+itob
+byte ": "
+txna Applications 1
+itob
+concat
+concat
+itxn_field Note
+global CurrentApplicationAddress
+itxn_field Receiver
+itxn_submit
+int 1
+return
+failed:
+int 0
+return

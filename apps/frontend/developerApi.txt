@@ -1,0 +1,7 @@
+Pipeline.main = true;
+Pipeline.EnableDeveloperAPI = true;
+Pipeline.indexer = "https://mainnet-idx.algonode.cloud";
+Pipeline.algod = "https://mainnet-api.algonode.cloud";
+Pipeline.token = "";
+Pipeline.devGenHash = "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=";
+Pipeline.devGenId = "mainnet-v1.0";

@@ -1,0 +1,38 @@
+{
+  "name": "xballot-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --no-cache --parallel --continue",
+    "sdk-gen": "cd packages/sdk && yarn build",
+
+    "api-deploy": "cd apps/api && yarn",
+    "sdk-api-deploy": "yarn sdk-gen && yarn api-deploy",
+
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.{js,jsx,ts,tsx,md}\"",
+    "changeset-create": "changeset",
+    "changeset-apply": "changeset version",
+    "release": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.22.0",
+    "eslint": "8.15.0",
+    "@xballot/eslint-config-xballot-monorepo": "*",
+    "prettier": "^2.7.1",
+    "turbo": "latest"
+  },
+  "packageManager": "yarn@1.22.17",
+  "dependencies": {
+    "flag": "^5.0.1"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

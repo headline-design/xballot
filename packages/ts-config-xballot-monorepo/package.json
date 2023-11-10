@@ -1,0 +1,11 @@
+{
+  "name": "@xballot/ts-config-xballot-monorepo",
+  "version": "1.0.0",
+  "license": "none",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "base.json",
+    "react-library.json"
+  ]
+}

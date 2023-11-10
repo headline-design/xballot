@@ -1,0 +1,32 @@
+export const ExtendedSpace = {
+    id : '',
+    name: '',
+    symbol: '',
+    network: '',
+    strategy: '',
+    about: '',
+    avatar: '',
+    domain: '',
+    website: '',
+    terms: '',
+    coingecko: '',
+    github: '',
+    twitter: '',
+    followersCount: 0,
+    private: false,
+    admins: [''],
+    members: [''],
+    categories: [''],
+    filters: {
+      invalids: ''
+  },
+    treasuries: [],
+    voting: {
+      delay: 0,
+      hideAbstain: false,
+      period: 0,
+      quorum: 0,
+      type: '',
+      privacy: '',
+    },
+  }

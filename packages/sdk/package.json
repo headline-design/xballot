@@ -1,0 +1,31 @@
+{
+  "name": "@xballot/sdk",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "sideEffects": false,
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --external react --platform=browser",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --external react --platform=browser",
+    "lint": "TIMING=1 eslint \"src/**/*.{ts,tsx,js,jsx}\" --fix",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "eslint": "8.15.0",
+    "@xballot/eslint-config-xballot-monorepo": "*",
+    "@xballot/ts-config-xballot-monorepo": "*",
+    "tsup": "5.10.1",
+    "typescript": "4.5.3"
+  },
+  "dependencies": {
+    "mongoose": "^7.2.0",
+    "dotenv": "^16.0.3"
+  }
+}
+
