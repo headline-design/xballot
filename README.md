@@ -36,3 +36,4 @@ Yarn Workspaces enables us to "hoist" dependencies that are shared between packa
 
 - [Frontend Deployment](https://xballot.net)
 - [XBallot Indexer Swagger](https://indexer.mainnet.xballotapi.com/api-dev/v1)
+- [XBallot Docs](https://xstack.build/xballot)
