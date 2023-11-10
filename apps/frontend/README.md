@@ -156,4 +156,3 @@ async function getAsaBalance(asa, address, proposal?.maxRound, appId) {
   }
 }
 ```
-
